@@ -1,0 +1,156 @@
+#include <iostream>
+#include <vector>
+#include <random>
+#include <chrono>
+#include <algorithm>
+
+//Quick Sort
+void quickSortAlgo(std::vector<int>& nums, int start, int end) {
+    if (start >= end) return;
+
+    int pivot = nums[end];
+    int partitionIndex = start;
+
+    for (int i = start; i < end; ++i) {
+        if (nums[i] < pivot) {
+            std::swap(nums[i], nums[partitionIndex]);
+            partitionIndex++;
+        }
+    }
+    std::swap(nums[partitionIndex], nums[end]);
+
+    quickSortAlgo(nums, start, partitionIndex - 1);
+    quickSortAlgo(nums, partitionIndex + 1, end);
+}
+
+//Merge Sort
+void mergeArrays(std::vector<int>& nums, int left, int mid, int right) {
+    std::vector<int> leftArr(nums.begin() + left, nums.begin() + mid + 1);
+    std::vector<int> rightArr(nums.begin() + mid + 1, nums.begin() + right + 1);
+
+    int i = 0, j = 0, index = left;
+
+    while (i < leftArr.size() && j < rightArr.size()) {
+        nums[index++] = (leftArr[i] <= rightArr[j]) ? leftArr[i++] : rightArr[j++];
+    }
+
+    while (i < leftArr.size()) nums[index++] = leftArr[i++];
+    while (j < rightArr.size()) nums[index++] = rightArr[j++];
+}
+
+void mergeSortAlgo(std::vector<int>& nums, int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        mergeSortAlgo(nums, left, mid);
+        mergeSortAlgo(nums, mid + 1, right);
+        mergeArrays(nums, left, mid, right);
+    }
+}
+
+// Binary Search Function
+int binarySearchAlgo(const std::vector<int>& nums, int target) {
+    int low = 0, high = nums.size() - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) low = mid + 1;
+        else high = mid - 1;
+    }
+    return -1;
+}
+
+// Exponential Search Function
+int exponentialSearchAlgo(const std::vector<int>& nums, int target) {
+    if (nums.empty()) return -1;
+    if (nums[0] == target) return 0;
+
+    int i = 1;
+    while (i < nums.size() && nums[i] <= target)
+        i *= 2;
+
+    int low = i / 2;
+    int high = std::min(i, (int)nums.size() - 1);
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) low = mid + 1;
+        else high = mid - 1;
+    }
+
+    return -1;
+}
+
+// Display array (for small N)
+void displayArray(const std::vector<int>& nums) {
+    for (int val : nums)
+        std::cout << val << " ";
+    std::cout << "\n";
+}
+
+int main() {
+    int size;
+    std::cout << "\n=== DATA STRUCTURE PROJECT: SORTING & SEARCHING ===\n\n";
+    std::cout << "Enter the number of random integers to generate: ";
+    std::cin >> size;
+
+    std::vector<int> input(size);
+    std::mt19937 engine(std::random_device{}());
+    std::uniform_int_distribution<int> dist(1, 10000);
+
+    for (int& num : input) num = dist(engine);
+
+    if (size <= 50) {
+        std::cout << "\nGenerated Array:\n";
+        displayArray(input);
+    }
+
+    // Quick Sort
+    std::vector<int> quickVec = input;
+    auto start = std::chrono::high_resolution_clock::now();
+    quickSortAlgo(quickVec, 0, quickVec.size() - 1);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "\nQuick Sort Duration: "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+              << " microseconds\n";
+
+    // Merge Sort
+    std::vector<int> mergeVec = input;
+    start = std::chrono::high_resolution_clock::now();
+    mergeSortAlgo(mergeVec, 0, mergeVec.size() - 1);
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "Merge Sort Duration: "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+              << " microseconds\n";
+
+    if (size <= 50) {
+        std::cout << "\nSorted Output (Quick Sort):\n";
+        displayArray(quickVec);
+    }
+
+    int searchKey;
+    std::cout << "\nEnter a value to search for: ";
+    std::cin >> searchKey;
+
+    // Binary Search
+    start = std::chrono::high_resolution_clock::now();
+    int binResult = binarySearchAlgo(quickVec, searchKey);
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "Binary Search: "
+              << (binResult != -1 ? "Found at index " + std::to_string(binResult) : "Not Found") << "\n";
+    std::cout << "Time Taken: "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+              << " microseconds\n";
+
+    // Exponential Search
+    start = std::chrono::high_resolution_clock::now();
+    int expResult = exponentialSearchAlgo(quickVec, searchKey);
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "Exponential Search: "
+              << (expResult != -1 ? "Found at index " + std::to_string(expResult) : "Not Found") << "\n";
+    std::cout << "Time Taken: "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+              << " microseconds\n";
+
+    return 0;
+}
